@@ -4,12 +4,11 @@
     <title>Redirecting...</title>
     <script>
         window.onload = function() {
-            // Get everything after /sb-redirect/
-            const pathAndQuery = window.location.pathname.replace('/sb-redirect/', '');
-            
-            if (pathAndQuery) {
-                // Redirect to the target URL
-                window.location.href = pathAndQuery;
+            // Get the URL from the query parameter
+            const queryString = window.location.search;
+            if (queryString.startsWith('?')) {
+                const targetUrl = queryString.substring(1);
+                window.location.href = targetUrl;
             }
         }
     </script>
