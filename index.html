@@ -3,23 +3,18 @@
 <head>
     <title>Redirecting...</title>
     <script>
-        function getTargetUrl() {
-            const queryString = window.location.search;
-            if (queryString.startsWith('?')) {
-                return queryString.substring(1);
-            }
-            return null;
-        }
-
         window.onload = function() {
-            const targetUrl = getTargetUrl();
-            if (targetUrl) {
-                window.location.href = targetUrl;
+            // Get everything after /sb-redirect/
+            const pathAndQuery = window.location.pathname.replace('/sb-redirect/', '');
+            
+            if (pathAndQuery) {
+                // Redirect to the target URL
+                window.location.href = pathAndQuery;
             }
         }
     </script>
 </head>
 <body>
-    <h1>Redirecting...</h1>
+    <h1>Redirecting to Amazon...</h1>
 </body>
 </html>
