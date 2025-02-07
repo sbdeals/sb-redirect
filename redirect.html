@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting...</title>
+    <script>
+        function getTargetUrl() {
+            const queryString = window.location.search;
+            if (queryString.startsWith('?')) {
+                return queryString.substring(1);
+            }
+            return null;
+        }
+
+        window.onload = function() {
+            const targetUrl = getTargetUrl();
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+</body>
+</html>
