@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Redirecting...</title>
+    <title>SB</title>
     <style>
         body {
             margin: 0;
@@ -21,7 +21,7 @@
         .loading-dots {
             margin-top: 20px;
             font-size: 24px;
-            animation: dots 1.5s infinite;
+            animation: dots 1s infinite;
         }
         @keyframes dots {
             0%, 20% { content: ""; }
@@ -35,9 +35,7 @@
             const queryString = window.location.search;
             if (queryString.startsWith('?')) {
                 const targetUrl = queryString.substring(1);
-                setTimeout(() => {
-                    window.location.href = targetUrl;
-                }, 1500);
+                window.location.href = targetUrl;
             }
         }
     </script>
