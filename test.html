@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swiftburst Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.32.0"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 8px; }
+    button { padding: 10px 15px; background: #3498db; color: white; border: none; cursor: pointer; }
+    .results { margin-top: 20px; border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+    pre { background: #f5f5f5; padding: 10px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Swiftburst Test</h1>
+  
+  <div class="form-group">
+    <label for="query">Search Query:</label>
+    <input type="text" id="query" placeholder="E.g., burger, pizza">
+  </div>
+  
+  <div class="form-group">
+    <label for="service">Service:</label>
+    <select id="service">
+      <option value="Doordash">Doordash</option>
+      <option value="Uber Eats">Uber Eats</option>
+      <option value="Gopuff">Gopuff</option>
+      <option value="Instacart">Instacart</option>
+      <option value="Postmates">Postmates</option>
+    </select>
+  </div>
+  
+  <div class="form-group">
+    <label for="amount">Estimated Amount ($):</label>
+    <input type="number" id="amount" value="50" min="1">
+  </div>
+  
+  <button id="testShopping">Test Shopping API</button>
+  <button id="testCreditCard">Test Credit Card API</button>
+  <button id="testDeals">Test Deals API</button>
+  <button id="testAll">Test All</button>
+  
+  <div id="results" class="results" style="display: none;">
+    <h2 id="resultTitle">Results</h2>
+    <pre id="resultContent"></pre>
+  </div>
+
+  <script>
+    // Initialize Supabase client
+    const supabaseUrl = 'https://ypjcxtvdogwsuyaknhmh.supabase.co';
+    // You'll need to replace this with your actual anon key from your Supabase dashboard
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwamN4dHZkb2d3c3V5YWtuaG1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU5MjE0MTAsImV4cCI6MjAzMTQ5NzQxMH0.5E7fHv4OAPDTe4tSUTfMIOQjL7WtqoFzGFQ0j7V5uFA';
+    const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Helper function to display results
+    function showResults(title, content) {
+      document.getElementById('resultTitle').textContent = title;
+      document.getElementById('resultContent').textContent = JSON.stringify(content, null, 2);
+      document.getElementById('results').style.display = 'block';
+    }
+    
+    // Test Shopping API
+    document.getElementById('testShopping').addEventListener('click', async () => {
+      const query = document.getElementById('query').value;
+      const service = document.getElementById('service').value;
+      
+      try {
+        const { data, error } = await client.functions.invoke('shopping-integration', {
+          body: { query, service }
+        });
+        
+        if (error) throw error;
+        showResults('Shopping API Results', data);
+      } catch (error) {
+        showResults('Error', { error: error.message });
+      }
+    });
+    
+    // Test Credit Card API
+    document.getElementById('testCreditCard').addEventListener('click', async () => {
+      const service = document.getElementById('service').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      
+      try {
+        const { data, error } = await client.functions.invoke('credit-card-finder', {
+          body: { service, amount, category: 'dining' }
+        });
+        
+        if (error) throw error;
+        showResults('Credit Card API Results', data);
+      } catch (error) {
+        showResults('Error', { error: error.message });
+      }
+    });
+    
+    // Test Deals API
+    document.getElementById('testDeals').addEventListener('click', async () => {
+      const service = document.getElementById('service').value;
+      
+      try {
+        const { data, error } = await client.functions.invoke('deal-aggregator', {
+          body: { services: [service] }
+        });
+        
+        if (error) throw error;
+        showResults('Deals API Results', data);
+      } catch (error) {
+        showResults('Error', { error: error.message });
+      }
+    });
+    
+    // Test All APIs
+    document.getElementById('testAll').addEventListener('click', async () => {
+      const query = document.getElementById('query').value;
+      const service = document.getElementById('service').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      
+      try {
+        showResults('Processing', { status: 'Starting tests...' });
+        
+        // Step 1: Get shopping results
+        const { data: shoppingData, error: shoppingError } = await client.functions.invoke('shopping-integration', {
+          body: { query, service }
+        });
+        if (shoppingError) throw new Error('Shopping API error: ' + shoppingError.message);
+        
+        showResults('Processing', { 
+          status: 'Shopping results fetched successfully',
+          results_count: shoppingData?.results?.shopping_results?.length || 0 
+        });
+        
+        // Step 2: Get credit card recommendations
+        const { data: cardData, error: cardError } = await client.functions.invoke('credit-card-finder', {
+          body: { service, amount, category: 'dining' }
+        });
+        if (cardError) throw new Error('Credit Card API error: ' + cardError.message);
+        
+        showResults('Processing', { 
+          status: 'Credit card recommendations fetched successfully',
+          recommendations_count: cardData?.recommendations?.length || 0
+        });
+        
+        // Step 3: Get deals
+        const { data: dealsData, error: dealsError } = await client.functions.invoke('deal-aggregator', {
+          body: { services: [service] }
+        });
+        if (dealsError) throw new Error('Deals API error: ' + dealsError.message);
+        
+        showResults('Processing', { 
+          status: 'Deals fetched successfully',
+          deals_count: Object.keys(dealsData?.deals || {}).length
+        });
+        
+        // Step 4: Get recommendation
+        const { data: recommendationData, error: recommendationError } = await client.functions.invoke('recommendation-engine', {
+          body: { 
+            query, 
+            service, 
+            amount,
+            shoppingResults: shoppingData.results,
+            cardRecommendations: cardData.recommendations,
+            deals: dealsData.deals
+          }
+        });
+        if (recommendationError) throw new Error('Recommendation API error: ' + recommendationError.message);
+        
+        showResults('All Tests Completed Successfully', {
+          recommendation: recommendationData.recommendation,
+          metadata: recommendationData.metadata
+        });
+      } catch (error) {
+        showResults('Error', { error: error.message });
+      }
+    });
+  </script>
+</body>
+</html>
